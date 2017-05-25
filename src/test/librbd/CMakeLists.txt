@@ -65,6 +65,10 @@ set(unittest_librbd_srcs
   operation/test_mock_SnapshotRollbackRequest.cc
   operation/test_mock_SnapshotUnprotectRequest.cc
   watcher/test_mock_RewatchRequest.cc
+  cache/file/test_mock_AioFile.cc
+  cache/file/test_mock_ImageStore.cc
+  cache/file/test_mock_MetaStore.cc
+  cache/file/test_mock_StupidPolicy.cc
   )
 add_executable(unittest_librbd
   ${unittest_librbd_srcs}

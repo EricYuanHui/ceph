@@ -27,7 +27,7 @@ if WITH_RADOSGW
 ceph_dencoder_CXXFLAGS += -DWITH_RADOSGW
 ceph_dencoder_LDADD += \
 	$(LIBRGW) \
-	$(LIBRGW_DEPS) 
+	$(LIBRGW_DEPS)
 endif
 
 
@@ -437,7 +437,7 @@ ceph_test_librbd_LDADD = \
 	libcls_rbd_client.la libcls_lock_client.la \
 	libjournal.la libcls_journal_client.la \
 	librados_api.la $(LIBRADOS_DEPS) $(UNITTEST_LDADD) \
-	$(CEPH_GLOBAL) $(RADOS_TEST_LDADD)
+	$(CEPH_GLOBAL) $(RADOS_TEST_LDADD) -lhdcs -lboost_serialization
 bin_DEBUGPROGRAMS += ceph_test_librbd
 
 ceph_test_librbd_api_SOURCES = \
@@ -447,7 +447,7 @@ ceph_test_librbd_api_SOURCES = \
 	test/librados/test.cc
 ceph_test_librbd_api_CXXFLAGS = $(UNITTEST_CXXFLAGS)
 ceph_test_librbd_api_LDADD = \
-	$(LIBRBD) $(LIBRADOS) $(UNITTEST_LDADD)
+	$(LIBRBD) $(LIBRADOS) $(UNITTEST_LDADD) -lhdcs -lboost_serialization
 bin_DEBUGPROGRAMS += ceph_test_librbd_api
 
 noinst_HEADERS += \
@@ -532,7 +532,7 @@ ceph_test_rbd_mirror_LDADD = \
 	$(LIBRBD_TYPES) \
 	librados_api.la $(LIBRADOS_DEPS) \
 	$(LIBOSDC) $(UNITTEST_LDADD) \
-	$(CEPH_GLOBAL) $(RADOS_TEST_LDADD)
+	$(CEPH_GLOBAL) $(RADOS_TEST_LDADD) -lhdcs -lboost_serialization
 bin_DEBUGPROGRAMS += ceph_test_rbd_mirror
 
 ceph_test_rbd_mirror_random_write_SOURCES = \
@@ -762,7 +762,7 @@ bin_DEBUGPROGRAMS += ceph_test_cls_rgw
 librgw_file_SOURCES = test/librgw_file.cc
 librgw_file_CXXFLAGS = -I$(srcdir)/xxHash $(UNITTEST_CXXFLAGS)
 librgw_file_LDADD = $(UNITTEST_LDADD)  \
-	librgw.la librados.la $(PTHREAD_LIBS) $(CEPH_GLOBAL) $(EXTRALIBS) 
+	librgw.la librados.la $(PTHREAD_LIBS) $(CEPH_GLOBAL) $(EXTRALIBS)
 bin_DEBUGPROGRAMS += librgw_file
 
 librgw_file_cd_SOURCES = test/librgw_file_cd.cc
@@ -789,7 +789,7 @@ librgw_file_nfsns_LDADD = $(UNITTEST_LDADD) \
 	librgw.la librados.la $(PTHREAD_LIBS) $(CEPH_GLOBAL) $(EXTRALIBS)
 bin_DEBUGPROGRAMS += librgw_file_nfsns
 
-# 
+#
 # test_rgw_token_SOURCES = test/test_rgw_token.cc
 # test_rgw_token_CXXFLAGS = $(UNITTEST_CXXFLAGS)
 # test_rgw_token_LDADD = $(UNITTEST_LDADD) \

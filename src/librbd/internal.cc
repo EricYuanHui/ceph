@@ -915,7 +915,7 @@ int mirror_image_disable_internal(ImageCtx *ictx, bool force,
 	    names.insert(make_pair(info.first.second, name));
       }
     }
-    
+
     return 0;
   }
 
@@ -937,7 +937,7 @@ int mirror_image_disable_internal(ImageCtx *ictx, bool force,
     std::list<std::pair<int64_t, string> > pools;
     r = rados.pool_list2(pools);
     if (r < 0) {
-      lderr(cct) << "error listing pools: " << cpp_strerror(r) << dendl; 
+      lderr(cct) << "error listing pools: " << cpp_strerror(r) << dendl;
       return r;
     }
 
@@ -1332,11 +1332,20 @@ int mirror_image_disable_internal(ImageCtx *ictx, bool force,
     uint64_t order = 0;
     opts.get(RBD_IMAGE_OPTION_ORDER, &order);
 
+    bool cache_volume = cct->_conf->rbd_cache_volume_enable;
+    std::string cache_volume_name("");
+    std::string cache_volume_backend("");
+    if(cache_volume){
+      cache_volume_name = cct->_conf->rbd_cache_volume_name + "_" + imgname;
+      cache_volume_backend = cct->_conf->rbd_cache_volume_backend;
+    }
+
     ldout(cct, 20) << "create " << &io_ctx << " name = " << imgname
 		   << " size = " << size << " old_format = " << old_format
 		   << " features = " << features << " order = " << order
 		   << " stripe_unit = " << stripe_unit
 		   << " stripe_count = " << stripe_count
+           << " cache_volume = " << cache_volume_name
 		   << dendl;
 
     if (features & ~RBD_FEATURES_ALL) {
@@ -1407,6 +1416,14 @@ int mirror_image_disable_internal(ImageCtx *ictx, bool force,
 		    stripe_count, journal_order, journal_splay_width,
                     journal_pool, non_primary_global_image_id,
                     primary_mirror_uuid, negotiate_features);
+
+      //create cache_volume
+      if( cache_volume ){
+        r = create_v2(io_ctx, cache_volume_name.c_str(), bid, size, order, features, stripe_unit,
+                    stripe_count, journal_order, journal_splay_width,
+                    journal_pool, non_primary_global_image_id,
+                    primary_mirror_uuid);
+      }
     }
 
     int r1 = opts.set(RBD_IMAGE_OPTION_ORDER, order);
@@ -2527,7 +2544,7 @@ int mirror_image_disable_internal(ImageCtx *ictx, bool force,
       return r;
 
     RWLock::RLocker l(ictx->snap_lock);
-    *exists = ictx->get_snap_id(snap_name) != CEPH_NOSNAP; 
+    *exists = ictx->get_snap_id(snap_name) != CEPH_NOSNAP;
     return 0;
   }
 
@@ -3205,7 +3222,7 @@ int mirror_image_disable_internal(ImageCtx *ictx, bool force,
     r = cls_client::mirror_image_get(&ictx->md_ctx, ictx->id, &mirror_image_internal);
     if (r == -ENOENT) {
       // mirroring is not enabled for this image
-      ldout(cct, 20) << "ignoring disable command: mirroring is not enabled for this image" 
+      ldout(cct, 20) << "ignoring disable command: mirroring is not enabled for this image"
                      << dendl;
       return 0;
     } else if (r == -EOPNOTSUPP) {
@@ -3229,8 +3246,8 @@ int mirror_image_disable_internal(ImageCtx *ictx, bool force,
           mirror_image_internal.state = cls::rbd::MIRROR_IMAGE_STATE_ENABLED;
           int r = cls_client::mirror_image_set(&ictx->md_ctx, ictx->id, mirror_image_internal);
           if (r < 0) {
-            lderr(cct) << "failed to re-enable image mirroring: " << cpp_strerror(r) 
-                       << dendl;          
+            lderr(cct) << "failed to re-enable image mirroring: " << cpp_strerror(r)
+                       << dendl;
           }
         }
       };
@@ -3255,7 +3272,7 @@ int mirror_image_disable_internal(ImageCtx *ictx, bool force,
           r = rados.ioctx_create2(info.first.first, ioctx);
           if (r < 0) {
             rollback = true;
-            lderr(cct) << "Error accessing child image pool " << info.first.second  << dendl; 
+            lderr(cct) << "Error accessing child image pool " << info.first.second  << dendl;
             return r;
           }
           for (auto &id_it : info.second) {
@@ -3943,7 +3960,7 @@ int mirror_image_disable_internal(ImageCtx *ictx, bool force,
 	 ++p) {
       total_bytes += p->second;
     }
-    
+
     ictx->md_lock.get_write();
     bool abort = ictx->readahead_disable_after_bytes != 0 &&
       ictx->total_bytes_read > ictx->readahead_disable_after_bytes;
@@ -3956,7 +3973,7 @@ int mirror_image_disable_internal(ImageCtx *ictx, bool force,
     uint64_t image_size = ictx->get_image_size(ictx->snap_id);
     ictx->snap_lock.put_read();
     ictx->md_lock.put_write();
-    
+
     pair<uint64_t, uint64_t> readahead_extent = ictx->readahead.update(image_extents, image_size);
     uint64_t readahead_offset = readahead_extent.first;
     uint64_t readahead_length = readahead_extent.second;

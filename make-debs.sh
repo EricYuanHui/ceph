@@ -25,7 +25,7 @@ mkdir -p $releasedir
 # remove all files not under git so they are not
 # included in the distribution.
 #
-git clean -dxf
+#git clean -dxf
 #
 # git describe provides a version that is
 # a) human readable
@@ -65,7 +65,7 @@ perl -pi -e 's/--dbg-package.*//' ceph-$vers/debian/rules
 # directory is included in the sources and the upstream version will
 # change each time it is modified.
 #
-dvers="$vers-1"
+dvers="$vers-1trusty"
 #
 # update the changelog to match the desired version
 #
